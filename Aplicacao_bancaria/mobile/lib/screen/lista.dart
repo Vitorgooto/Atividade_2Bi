@@ -1,10 +1,33 @@
 import 'package:flutter/material.dart';
+import '../service/abstract-api.dart'; // Import the API service
 
-class ListaTransacoes extends StatelessWidget {
-  final List<Map<String, dynamic>> transacoes = [
-    {'descricao': 'Transação 1', 'valor': 100.0},
-    {'descricao': 'Transação 2', 'valor': 50.0},
-  ];
+class ListaTransacoes extends StatefulWidget {
+  @override
+  _ListaTransacoesState createState() => _ListaTransacoesState();
+}
+
+class _ListaTransacoesState extends State<ListaTransacoes> {
+  final AbstractApi _api = AbstractApi('transacoes');
+  List<Map<String, dynamic>> transacoes = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTransacoes(); // Load data from API when the screen loads
+  }
+
+  void _loadTransacoes() async {
+    final data = await _api.getAll();
+    // Você precisa decodificar a string JSON da API para um Iterable
+    setState(() {
+      transacoes = List<Map<String, dynamic>>.from(json.decode(data)); // Decodificando a resposta JSON
+    });
+  }
+
+  void _deleteTransacao(int id) async {
+    await _api.deleteById(id);
+    _loadTransacoes(); // Reload data after deletion
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +39,7 @@ class ListaTransacoes extends StatelessWidget {
           final transacao = transacoes[index];
           return ListTile(
             title: Text(transacao['descricao']),
-            subtitle: Text('Valor: R\$ ${transacao['valor']}'),
+            subtitle: Text('Valor: R\$ ${transacao['valor']}'),  // Corrigido escape do $
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
@@ -29,7 +52,7 @@ class ListaTransacoes extends StatelessWidget {
                 IconButton(
                   icon: Icon(Icons.delete),
                   onPressed: () {
-                    // Lógica para deletar via API
+                    _deleteTransacao(transacao['id']); // Call the delete function
                   },
                 ),
               ],

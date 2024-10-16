@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-
+import '../service/abstract-api.dart'; // Import the API service
 
 class Formulario extends StatefulWidget {
   @override
@@ -11,6 +10,7 @@ class _FormularioState extends State<Formulario> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _textoController = TextEditingController();
   final TextEditingController _numeroController = TextEditingController();
+  final AbstractApi _api = AbstractApi('transacoes'); 
 
   @override
   Widget build(BuildContext context) {
@@ -44,9 +44,20 @@ class _FormularioState extends State<Formulario> {
                 },
               ),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    // Aqui será feita a chamada API para salvar
+                    Map<String, dynamic> data = {
+                      'descricao': _textoController.text,
+                      'valor': double.parse(_numeroController.text)
+                    };
+
+                    // Call the API to save the data
+                    await _api.post(data);
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Transação salva com sucesso!'))
+                    );
+                    Navigator.pop(context); // Close the form after saving
                   }
                 },
                 child: Text('Salvar'),
